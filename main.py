@@ -17,13 +17,23 @@ def print_stats(dbConn):
     dbCursor = dbConn.cursor();
     dbCursorStop = dbConn.cursor();
     dbCursorTotalRide = dbConn.cursor();
+    dbCursorDateRange = dbConn.cursor();
+    dbCursorTotalRidership = dbConn.cursor();
 
   ######## This portion is designated for SQL Quesries ### 
     sqlNumberofStations = "Select count(*) From Stations;"
     SqlNumberofStops = "Select count(Stop_ID) from Stops;"
     SqlNumberofTotalRide = "Select count(Num_Riders) from Ridership;"
+    SqlDateRange = " Select Date(Min(Ride_Date)) as FromDate, Date(max(Ride_Date)) ToDate from Ridership;"
+    SqlTotalRidership = "Select sum(num_Riders) from Ridership;"
+
+     
 
 
+  
+
+
+  
   #######  --- #############################################
 
   
@@ -31,13 +41,34 @@ def print_stats(dbConn):
     dbCursor.execute(sqlNumberofStations)
     dbCursorStop.execute(SqlNumberofStops)
     dbCursorTotalRide.execute(SqlNumberofTotalRide)
+    dbCursorDateRange.execute(SqlDateRange)
+    dbCursorTotalRidership.execute(SqlTotalRidership)
     fetchStation = dbCursor.fetchone();
     fetchStops = dbCursorStop.fetchone();
     fetchTotalRide= dbCursorTotalRide.fetchone();
+    fetchDateRange= dbCursorDateRange.fetchall();
+    fetchTotalRidership = dbCursorTotalRidership.fetchone();
+  
     #row5 = dbT.fetchall()
     print("  # of stations:", f"{ fetchStation[0]:,}")
     print("  # of stops:", f"{fetchStops[0]:,}")
     print("  # of stops:", f"{ fetchTotalRide[0]:,}")
+
+    for row in fetchDateRange:
+       print("  date range: ", row[0], "-", row[1])
+    
+    print("  Total ridership:", f"{fetchTotalRidership[0]:,}")
+
+
+      
+
+
+      
+
+  
+
+  
+  
 
   
    
