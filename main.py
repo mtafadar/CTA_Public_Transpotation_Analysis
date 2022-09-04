@@ -67,7 +67,7 @@ def print_stats(dbConn):
     #row5 = dbT.fetchall()
     print("  # of stations:", f"{ fetchStation[0]:,}")
     print("  # of stops:", f"{fetchStops[0]:,}")
-    print("  # of stops:", f"{ fetchTotalRide[0]:,}")
+    print("  # of  ride entries:", f"{ fetchTotalRide[0]:,}")
 
     for row in fetchDateRange:
        print("  date range: ", row[0], "-", row[1])
@@ -197,6 +197,8 @@ def commandFiveFunction(dbConn, value):
         AccessibleValue = "No"
      print(row[0], ":", "direction = ", row[1], "(accessible?", AccessibleValue+ ")")
 
+     
+
 
      
 
@@ -312,6 +314,9 @@ while(True):
     if(int(GenericInputVal) == 5):
       commandFiveInput= input("Enter a line color (e.g. Red or Yellow): ")
       commandFiveFunction(dbConn,commandFiveInput)
+
+    if(int(GenericInputVal) == 6):
+      print("print something here");
       
       
       
