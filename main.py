@@ -278,6 +278,9 @@ while (True):
         if (int(GenericInputVal) == 6):
             commandSixFunction(dbConn)
 
+        if (int (GenericInputVal) == 7):
+           print("I will do something here"); 
+
     else:
         print("**Error, unknown command, try again...")
 
