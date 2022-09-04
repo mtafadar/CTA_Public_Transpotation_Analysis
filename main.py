@@ -172,6 +172,47 @@ def CommandFourFunction(dbConn):
     percantageofBusy =  (row[1] / totalsumOfRider) * 100;
     print(row[0], ":", f"{row[1]:,}", f"({ percantageofBusy:.2f}%)")
 
+
+
+
+def commandFiveFunction(dbConn, value):
+   dbCursorColorBelongStationName =  dbConn.cursor();
+   SqlForColorBelongStationName = """Select Stop_Name, Direction, ADA from Stops
+      inner join StopDetails   on StopDetails.Stop_ID  = Stops.Stop_ID
+      inner join Lines On Lines.Line_ID = StopDetails.Line_ID
+      where color = ? 
+      order by Stop_Name ASC;"""
+
+   dbCursorColorBelongStationName.execute(SqlForColorBelongStationName, [value])
+   fetchColorBelongStationName = dbCursorColorBelongStationName.fetchall(); 
+
+   if(len(fetchColorBelongStationName) == 0):
+     print("**No such line...");
+
+   for row in  fetchColorBelongStationName:
+     if(row[2] == 1):
+       AccessibleValue = "Yes"
+
+     else:
+        AccessibleValue = "No"
+     print(row[0], ":", "direction = ", row[1], "(accessible?", AccessibleValue+ ")")
+
+
+     
+
+
+   
+
+     
+
+
+     
+      
+   
+
+  
+  
+
     
     
 
@@ -266,11 +307,20 @@ while(True):
 
     if(int(GenericInputVal) == 4):
       CommandFourFunction(dbConn);
+
+
+    if(int(GenericInputVal) == 5):
+      commandFiveInput= input("Enter a line color (e.g. Red or Yellow): ")
+      commandFiveFunction(dbConn,commandFiveInput)
+      
+      
+      
       
     
       
   else:
     print("**Error, unknown command, try again...");
+  
 
     
 
