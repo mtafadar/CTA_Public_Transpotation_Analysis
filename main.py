@@ -126,16 +126,74 @@ def commandTwoFunction(dbConn):
    group by Station_Name 
    order by Station_Name asc"""
   
-   dbCusorForStationAndNumber.execute(SqlForStationAndNumber);
-
+   dbCusorForStationAndNumber.execute(SqlForStationAndNumber); # Execution of the  Sql 
    fetchdbCusorForStationAndNumber = dbCusorForStationAndNumber.fetchall();
-   totalsumOfRider = calculateTotalRider(dbConn);
-
+   totalsumOfRider = calculateTotalRider(dbConn);  # this function  returns the sum of all  the riders 
+  
+  #printing to the console   
    for row in fetchdbCusorForStationAndNumber:
-     percantageofRider =  (row[1] / totalsumOfRider) * 100;
+     percantageofRider =  (row[1] / totalsumOfRider) * 100; # multiplication of 100 here just to make it percentage
      print(row[0],  ":", f"{row[1]:,}", f"({percantageofRider:.2f}%)");  # this is just the formatted output  as following 
      #  Station_Name, Total rider, and   percentage of the rider out of total 
 
+
+
+def commandThereeFunction(dbConn):
+  dbCursorMostBusiestStation =  dbConn.cursor();
+  sqlForMostBusiestStation = """Select Station_Name,  sum(Num_Riders) as NumberOfRider from Ridership 
+         inner join Stations  on Stations.Station_ID = Ridership.Station_ID
+         group by Station_Name
+         order by NumberOfRider  Desc
+         limit 10; """
+
+  dbCursorMostBusiestStation.execute(sqlForMostBusiestStation);
+  fetchMostBusiestStation = dbCursorMostBusiestStation.fetchall();
+  totalsumOfRider = calculateTotalRider(dbConn);
+
+  for row in  fetchMostBusiestStation:
+    percantageofBusy =  (row[1] / totalsumOfRider) * 100;
+    print(row[0], ":", f"{row[1]:,}", f"({ percantageofBusy:.2f}%)")
+
+
+
+
+def CommandFourFunction(dbConn): 
+  dbCursorLeastBusyStation =  dbConn.cursor();
+  sqlForLeastBusiestStation = """Select Station_Name,  sum(Num_Riders) as NumberOfRider from Ridership 
+          inner join Stations  on Stations.Station_ID = Ridership.Station_ID
+          group by Station_Name
+          order by NumberOfRider  asc
+          limit 10;"""
+  dbCursorLeastBusyStation.execute(sqlForLeastBusiestStation);
+  fetchLeastBusiestStation = dbCursorLeastBusyStation.fetchall();
+  totalsumOfRider = calculateTotalRider(dbConn);
+  
+  for row in fetchLeastBusiestStation :
+    percantageofBusy =  (row[1] / totalsumOfRider) * 100;
+    print(row[0], ":", f"{row[1]:,}", f"({ percantageofBusy:.2f}%)")
+
+    
+    
+
+  
+
+
+
+  
+  
+  
+  
+    
+    
+    
+     
+
+  
+
+   
+  
+  
+  
     
 
     
@@ -204,7 +262,12 @@ while(True):
       commandTwoFunction(dbConn);
       
     if(int(GenericInputVal) == 3):
-      print("Something here");
+      commandThereeFunction(dbConn);
+
+    if(int(GenericInputVal) == 4):
+      CommandFourFunction(dbConn);
+      
+    
       
   else:
     print("**Error, unknown command, try again...");
