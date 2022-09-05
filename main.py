@@ -95,7 +95,6 @@ def print_stats(dbConn):
 # from the Station Table
 #  Its accept the wildcard user input from the  user and retrive the information
 
-
 def commandOneFunction(dbConn, value):
     dbCursor = dbConn.cursor()
     sqlUserStations = """Select Station_ID, Station_Name from Stations Where  Station_Name like ? """
@@ -141,7 +140,6 @@ def commandTwoFunction(dbConn):
         print(row[0], ":", f"{row[1]:,}", f"({percantageofRider:.2f}%)")
         # this is just the formatted output  as following
         #  Station_Name, Total rider, and   percentage of the rider out of total
-
 
 def commandThereeFunction(dbConn):
     dbCursorMostBusiestStation = dbConn.cursor()
@@ -260,9 +258,6 @@ def commandSevenFunction(dbConn):
         plt.plot(x,y)
         plt.show()
   
-       
-
-
 def  CheckforNumberOfStation(dbConn, Val):
      dbcusorRiderBasedOnMonth = dbConn.cursor(); 
      sqlforStationValue = """Select Station_Name from Stations
@@ -332,7 +327,6 @@ ORDER BY R.Ride_Date ASC;"""
      print("Station 1: ", row[0], row[1])
      legendForFirstStation = row[1];
     
-  
   for row in fetchFirstStation: 
     print( row[0],  row[1])
      
@@ -343,10 +337,6 @@ ORDER BY R.Ride_Date ASC;"""
 
   for row in fetchFirstStation2: 
     print( row[0],  row[1])
-
-
-  
-     
 
   plotInput = input("plot: (y/n)")
   if (plotInput == 'y'):
@@ -394,9 +384,29 @@ def commandNineFunction(dbConn, StationName):
 
    for row in fetchStation:
      print(row[0], ": ",  "(" + str(row[1])+","  , str(row[2]) + ")" )
-     
-     
-          
+
+
+   plotInput = input("plot: (y/n)")
+   if (plotInput == 'y'):
+     x = []
+     y = []
+     for row in fetchStation:
+      y.append(row[1])
+      x.append(row[2])
+     image = plt.imread("chicago.png"); 
+     xydims = [-87.9277, -87.5569, 41.7012, 42.0868]
+     plt.imshow(image, extent=xydims)
+     plt.title( StationName +  " line")  # StationName here is Color
+     # neeed To change the variable name  StationName = color
+     plt.ion()
+     plt.plot(x, y, "o", c=StationName)
+
+     for row in fetchStation:
+       plt.annotate(row[0], (row[2], row[1]))
+     plt.xlim([-87.9277, -87.5569])
+     plt.ylim([41.7012, 42.0868])
+     plt.show()
+            
 ##################################################################
 #
 # main
@@ -460,14 +470,7 @@ while (True):
           inputFormat = commandInputStation[1:].lower();
           inputFormat2 = commandInputStation[0].upper();
           completeFormatSearch = inputFormat2 + inputFormat
-          commandNineFunction(dbConn,completeFormatSearch);
-          
-          
-           
-              
-
-
-  
+          commandNineFunction(dbConn,completeFormatSearch);  
     
     except:
          print("**Error, unknown command, try again...")
