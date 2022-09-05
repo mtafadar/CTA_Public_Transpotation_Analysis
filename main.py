@@ -337,7 +337,13 @@ ORDER BY R.Ride_Date ASC;"""
 
 
   dbcusorStationNameByDate.execute(SqlforGraph , [year, firstStationName])
-  fetchForPlot = dbcusorStationNameByDate.fetchall(); 
+  fetchForPlot1 = dbcusorStationNameByDate.fetchall(); 
+  dbcusorStationNameByDate.execute(SqlforGraph , [year, secondStationName])
+  fetchForPlot2 = dbcusorStationNameByDate.fetchall(); 
+
+  
+
+  
 
 
 
@@ -364,29 +370,24 @@ ORDER BY R.Ride_Date ASC;"""
   if (plotInput == 'y'):
     x1= []
     y1 = []
-    x2 = []
     y2 = []
     day  = 1;
   
-    for row in fetchForPlot:
+    for row in fetchForPlot1:
       x1.append(day)
       y1.append(row[1])
       day = day + 1;
-      
 
+    for row in fetchForPlot2:
+      y2.append(row[1])
+
+    plt.xlabel("day")
+    plt.ylabel("number of riders")
+    plt.title("riders each day of " + year)
     
-    
-
-    
-
-    
-
-
-    # plt.xlabel("year")
-    # plt.ylabel("number of riders (x*10^8")
-    # plt.title("yearly ridership")
-     plt.ion()
+    plt.ion()
     plt.plot(x1,y1)
+    plt.plot(x1,y2)
     plt.show()
   
   
