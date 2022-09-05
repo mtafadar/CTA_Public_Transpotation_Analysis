@@ -283,16 +283,12 @@ def  CheckforNumberOfStation(dbConn, Val):
        
      return;
 
-
 def  CommandEightFunction(dbConn, year, firstStationName, secondStationName):
   dbcusorStation = dbConn.cursor(); 
   dbcusorStationNameByDate = dbConn.cursor(); 
-
   
   sqlforGenerictStation = """Select Station_ID, Station_Name From Stations 
   Where Station_Name  like  ? """
-
-  
   
   sqlforMainQueryStationOne = """SELECT 
   Date(R.Ride_Date), 
@@ -314,10 +310,6 @@ ORDER BY R.Ride_Date ASC;"""
 
   SqlforGraph = """Select Date(Ride_Date) , sum(Num_Riders) from Ridership  inner join  Stations  on Stations.Station_ID = Ridership.Station_ID Where strftime('%Y', Ride_Date) = ? AND Station_Name like ? Group By  Ride_Date""";
 
-
-
-  
-  
   dbcusorStation.execute(sqlforGenerictStation, [firstStationName])
   fetchStation =  dbcusorStation.fetchall();
 
@@ -335,12 +327,6 @@ ORDER BY R.Ride_Date ASC;"""
   fetchForPlot1 = dbcusorStationNameByDate.fetchall(); 
   dbcusorStationNameByDate.execute(SqlforGraph , [year, secondStationName])
   fetchForPlot2 = dbcusorStationNameByDate.fetchall(); 
-
-  
-
-  
-
-
 
   for row in fetchStation:
      print("Station 1: ", row[0], row[1])
@@ -389,9 +375,27 @@ ORDER BY R.Ride_Date ASC;"""
     plt.show()
 
     
-  
-  
-    
+def commandNineFunction(dbConn, StationName):
+   dbcusorStation = dbConn.cursor(); 
+   SqlforStationName = """Select  distinct(Station_Name), Latitude, 
+       Longitude from Stations
+       Inner Join Stops on Stations.Station_ID =  Stops.Station_ID
+       Inner join  StopDetails on  StopDetails.Stop_ID = Stops.Stop_ID
+       Inner join Lines on StopDetails.Line_ID = Lines.Line_ID
+       Where  Color = ?
+       order by Station_Name ASC"""
+
+   dbcusorStation.execute(SqlforStationName, [StationName]); 
+   fetchStation = dbcusorStation.fetchall();
+
+   if(len(fetchStation) == 0):
+     print("**No such line...")
+     return;
+
+   for row in fetchStation:
+     print(row[0], ": ",  "(" + str(row[1])+","  , str(row[2]) + ")" )
+     
+     
           
 ##################################################################
 #
@@ -411,7 +415,8 @@ while (True):
     if (GenericInputVal == 'x'):
         break
 
-    if (int(GenericInputVal) > 0 and int(GenericInputVal) < 10):
+    try:
+      if (int(GenericInputVal) > 0 and int(GenericInputVal) < 10):
         if (int(GenericInputVal) == 1):
             commandOneInput = input(
                 "Enter partial station name (wildcards _ and %):")
@@ -428,7 +433,12 @@ while (True):
 
         if (int(GenericInputVal) == 5):
             commandFiveInput = input( "Enter a line color (e.g. Red or Yellow): ")
-            commandFiveFunction(dbConn, commandFiveInput)
+
+            inputFormatFive = commandFiveInput[1:].lower();
+            inputFormatFive2 = commandFiveInput[0].upper();
+            completeFormatSearchFive = inputFormatFive2 + inputFormatFive; 
+      
+            commandFiveFunction(dbConn, completeFormatSearchFive)
 
         if (int(GenericInputVal) == 6):
             commandSixFunction(dbConn)
@@ -440,14 +450,27 @@ while (True):
           commandInputYear  = (input( "Year to compare against?"));
           commandStationNameInput = input("Enter station 1 (wildcards _ and %):");
           if(CheckforNumberOfStation(dbConn, commandStationNameInput) == True):
-            commandStationNameInput2 = input("Enter station (wildcards _ and %):");
+            commandStationNameInput2 = input("Enter station 2 (wildcards _ and %):");
             if(CheckforNumberOfStation(dbConn, commandStationNameInput2) == True):
               CommandEightFunction(dbConn, commandInputYear , commandStationNameInput,commandStationNameInput2)
+
+        if(int(GenericInputVal) == 9):
+          commandInputStation  = (input( "Enter a line color (e.g. Red or Yellow): "));
+
+          inputFormat = commandInputStation[1:].lower();
+          inputFormat2 = commandInputStation[0].upper();
+          completeFormatSearch = inputFormat2 + inputFormat
+          commandNineFunction(dbConn,completeFormatSearch);
+          
+          
+           
               
 
+
   
-    else:
-       print("**Error, unknown command, try again...")
+    
+    except:
+         print("**Error, unknown command, try again...")
 
 #
 # done
