@@ -212,7 +212,7 @@ def commandSixFunction(dbConn):
     print("** ridership by month **")
 
     for row in fetchRiderBasedOnMonth:
-        print(row[0], ":", row[1])
+        print(row[0], ":", f"{row[1]:,}")
 
     plotInput = input("plot: (y/n)")
 
@@ -229,14 +229,68 @@ def commandSixFunction(dbConn):
         plt.plot(x,y)
         plt.show()
 
-         
+def commandSevenFunction(dbConn):
+   dbcusorRiderBasedOnYear = dbConn.cursor()
+   sqlRiderBasedOnYear =  """Select  strftime('%Y', Ride_Date) as Year, sum(Num_Riders)
+                from  Ridership 
+                group By Year
+                order by Year asc;"""
+
+   dbcusorRiderBasedOnYear.execute(sqlRiderBasedOnYear);
+   fetchRiderBasedonYear = dbcusorRiderBasedOnYear.fetchall();
+
+   print("** ridership by year **")
+   for row in fetchRiderBasedonYear:
+      print(row[0], ":", f"{row[1]:,}")
+
+   plotInput = input("plot: (y/n)")
+   if (plotInput == 'y'):
+        x= []
+        y = []
+        for row in fetchRiderBasedonYear:
+          val = row[0][2:4]
+          x.append(val);
+          y.append([row[1]])
+          
+        plt.xlabel("year")
+        plt.ylabel("number of riders (x*10^8")
+        plt.title("yearly ridership")
+        plt.plot(x,y)
+        plt.show()
+  
+       
 
 
+def  CheckforNumberOfStation(dbConn, Val):
+     dbcusorRiderBasedOnMonth = dbConn.cursor(); 
+     sqlforStationValue = """Select Station_Name from Stations
+     Where Station_Name like ? """
+     dbcusorRiderBasedOnMonth.execute(sqlforStationValue, [Val]);
+     fetchStationValue = dbcusorRiderBasedOnMonth.fetchall();
 
+     if(len(fetchStationValue) == 0 ):
+       print("**No station found...");
+       return False;
 
+     if(len(fetchStationValue) > 1):
+       print("**Multiple stations found...");
+       return False;
+
+     if(len(fetchStationValue) == 1):
+       return True;
+       
+     return;
       
+        
+      
+  
 
+     
 
+    
+  
+    
+          
 ##################################################################
 #
 # main
@@ -271,15 +325,31 @@ while (True):
             CommandFourFunction(dbConn)
 
         if (int(GenericInputVal) == 5):
-            commandFiveInput = input(
-                "Enter a line color (e.g. Red or Yellow): ")
+            commandFiveInput = input( "Enter a line color (e.g. Red or Yellow): ")
             commandFiveFunction(dbConn, commandFiveInput)
 
         if (int(GenericInputVal) == 6):
             commandSixFunction(dbConn)
 
         if (int (GenericInputVal) == 7):
-           print("I will do something here"); 
+           commandSevenFunction(dbConn);
+
+        if(int(GenericInputVal) == 8):
+          commandEightInput  = int(input( "Year to compare against?"));
+          commandStationNameInput = input("Enter station 1 (wildcards _ and %):");
+          if(CheckforNumberOfStation(dbConn, commandStationNameInput) == True):
+            commandStationNameInput2 = input("Enter station (wildcards _ and %):");
+            if(CheckforNumberOfStation(dbConn, commandStationNameInput2) == True):
+               print("plotting here")
+              
+            
+          
+          
+          
+
+          
+          
+                
 
     else:
         print("**Error, unknown command, try again...")
