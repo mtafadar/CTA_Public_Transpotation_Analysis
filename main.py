@@ -317,11 +317,6 @@ ORDER BY R.Ride_Date ASC;"""
 
 
   
-
-
-
-
-
   
   dbcusorStation.execute(sqlforGenerictStation, [firstStationName])
   fetchStation =  dbcusorStation.fetchall();
@@ -349,13 +344,16 @@ ORDER BY R.Ride_Date ASC;"""
 
   for row in fetchStation:
      print("Station 1: ", row[0], row[1])
+     legendForFirstStation = row[1];
     
   
   for row in fetchFirstStation: 
     print( row[0],  row[1])
+     
 
   for row in fetchStation2:
     print("Station 2: ", row[0], row[1])
+    legendForSecondStation = row[1];
 
   for row in fetchFirstStation2: 
     print( row[0],  row[1])
@@ -363,8 +361,6 @@ ORDER BY R.Ride_Date ASC;"""
 
   
      
-  
-    
 
   plotInput = input("plot: (y/n)")
   if (plotInput == 'y'):
@@ -372,6 +368,7 @@ ORDER BY R.Ride_Date ASC;"""
     y1 = []
     y2 = []
     day  = 1;
+    plt.clf(); # this function clear any previous plot 
   
     for row in fetchForPlot1:
       x1.append(day)
@@ -385,10 +382,13 @@ ORDER BY R.Ride_Date ASC;"""
     plt.ylabel("number of riders")
     plt.title("riders each day of " + year)
     
-    plt.ion()
-    plt.plot(x1,y1)
-    plt.plot(x1,y2)
+    plt.ion() # this function works in  a way that the  terminal does not hang after plot
+    plt.plot(x1,y1,  label= legendForFirstStation)
+    plt.plot(x1,y2, label= legendForSecondStation)
+    plt.legend(loc="upper right")
     plt.show()
+
+    
   
   
     
@@ -444,9 +444,6 @@ while (True):
             if(CheckforNumberOfStation(dbConn, commandStationNameInput2) == True):
               CommandEightFunction(dbConn, commandInputYear , commandStationNameInput,commandStationNameInput2)
               
-
-              
-                 
 
   
     else:
