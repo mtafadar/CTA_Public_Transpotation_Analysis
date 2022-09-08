@@ -2,6 +2,7 @@
 #  CS 341 Fall 2022
 # University of Illinois
 
+
 import sqlite3
 import matplotlib.pyplot as plt
 
@@ -10,11 +11,23 @@ import matplotlib.pyplot as plt
 #
 # print_stats
 #
-# Given a connection to the CTA database, executes various
 # SQL queries to retrieve and output basic stats.
+# This functions retrive 
+# 1. Total number of Station 
+# 2.  Total number of Stops
+# 3.  Total number of ride entries 
+# 4.  Date range (from ride started to when ride ended)
+# 5.  Total Ridership 
+# 6. Weekday Ridership (Monday - Friday)
+# 7. Saturday Ridership 
+# 8. Sunday  or Holiday Ridership 
 #
+####################################################################
+
 def print_stats(dbConn):
-    dbCursor = dbConn.cursor()
+
+   ####### I did seperate cursor so that its easy to read and understand ######
+    dbCursor = dbConn.cursor()  
     dbCursorStop = dbConn.cursor()
     dbCursorTotalRide = dbConn.cursor()
     dbCursorDateRange = dbConn.cursor()
@@ -30,9 +43,9 @@ def print_stats(dbConn):
     SqlNumberofTotalRide = "Select count(Num_Riders) from Ridership;"
     SqlDateRange = " Select Date(Min(Ride_Date)) as FromDate, Date(max(Ride_Date)) ToDate from Ridership;"
     SqlTotalRidership = "Select sum(num_Riders) from Ridership;"
-    SqlWeekdayRidership = "Select sum(Num_Riders) from Ridership Where Type_of_day = \"W\";"
-    SqlSaturdayRidership = "Select sum(Num_Riders) from Ridership Where Type_of_day = \"A\";"
-    SqlSundayOrHoliRidership = "Select sum(Num_Riders) from Ridership Where Type_of_day = \"U\";"
+    SqlWeekdayRidership = "Select sum(Num_Riders) from Ridership Where Type_of_day = \"W\";" # W stand for weekday 
+    SqlSaturdayRidership = "Select sum(Num_Riders) from Ridership Where Type_of_day = \"A\";" # A stands for Saturday 
+    SqlSundayOrHoliRidership = "Select sum(Num_Riders) from Ridership Where Type_of_day = \"U\";" # u stands for Sunday or Holiday 
 
     #######  --- #############################################
 
@@ -61,25 +74,25 @@ def print_stats(dbConn):
     fetchSunHoliRider = dbCursorSunOrHoliRider.fetchone()
     #Fetching #############################################
 
-    #row5 = dbT.fetchall()
+  ##### Outputting  generic stats ############ 
+   # f here of  for formating purpose (it is a way to format  string that is more readable and fast)
     print("  # of stations:", f"{ fetchStation[0]:,}")
     print("  # of stops:", f"{fetchStops[0]:,}")
     print("  # of  ride entries:", f"{ fetchTotalRide[0]:,}")
-
     for row in fetchDateRange:
         print("  date range: ", row[0], "-", row[1])
-
     print("  Total ridership:", f"{fetchTotalRidership[0]:,}")
-
     weekdayRiderPercentage = ((fetchWeekdayRider[0] / fetchTotalRidership[0]) *
                               100)
     formatWeekdayRiderPercentage = "{:.2f}".format(weekdayRiderPercentage)
 
+
+  #   the * with 100 is just for to get the percentage of the rider for weekday, Saturday  or Sunday or holiday 
     saturdayRiderPercantage = (fetchSaturdayRider[0] /
                                fetchTotalRidership[0]) * 100
     formatSaturdayRiderPercantage = "{:.2f}".format(saturdayRiderPercantage)
     sunOrHolidayRiderPercentage = (fetchSunHoliRider[0] /
-                                   fetchTotalRidership[0]) * 100
+                                   fetchTotalRidership[0]) * 100 
     formatSunOrHolidayRiderPercantage = "{:.2f}".format(
         sunOrHolidayRiderPercentage)
     print("  Weekday ridership:", f"{fetchWeekdayRider[0]:,}",
@@ -91,50 +104,60 @@ def print_stats(dbConn):
           "(" + formatSunOrHolidayRiderPercantage + "%)")
 
 
+
+
 # This function   retrive Station ID and Station_Name
 # from the Station Table
 #  Its accept the wildcard user input from the  user and retrive the information
+# The first parameter  is used for executing  Sql    query and 2nd parameter  take wildcard user input for station name
 
-
-def commandOneFunction(dbConn, value):
+def station_name_from_user(dbConn, value):
 
     count = 0
     dbCursor = dbConn.cursor()
-
     sqlUserStations = """Select Station_ID, Station_Name from Stations Where  
      Station_Name like ? 
     order by Station_Name ASC"""
     # the question mark here will be replace by the value during SQL search query when its executed
-
-    dbCursor.execute(sqlUserStations, [value])
+    dbCursor.execute(sqlUserStations, [value]) # the value  here   will be excuted in place of ? 
     fetchStation = dbCursor.fetchall()
-
     if (len(fetchStation) == 0):
         print(" **No stations found...")
-
-    if (len(fetchStation) == 1):
-        print("", fetchStation[0][0], ":", fetchStation[0][1])
-
+    # if (len(fetchStation) == 1):
+    #     print("", fetchStation[0][0], ":", fetchStation[0][1])
     else:
         for row in fetchStation:
-            if (count == 0):
-                print("", row[0], ":", row[1])
+            if (count == 0):   # this is primarily for  matching the gradescope output style :) 
+                print("", row[0], ":", row[1]) 
                 count = count + 1
             else:
                 print(row[0], ":", row[1])
 
 
-def calculateTotalRider(dbConn):
+
+#######
+#
+#This   function sum the total number of Rider of all time and return that value 
+# The parameter   is for executing the Sql query 
+#
+#######
+        
+def calculate_total_rider(dbConn):
     dbCusorForTotalRider = dbConn.cursor()
     SqlForTotalRider = """ select Sum(Num_Riders) from Ridership;"""
     dbCusorForTotalRider.execute(SqlForTotalRider)
     fetchdbCusorForTotalRider = dbCusorForTotalRider.fetchone()
-    return fetchdbCusorForTotalRider[0]
+    return fetchdbCusorForTotalRider[0] # returning total # of riders 
 
 
-def commandTwoFunction(dbConn):
+######
+# This functio query and print ridership at each station, in ascending order by station name
+# It also print  each value of the station and percentage of the station across the total L ridership
+#
+#####
+def  ridership_at_each_station(dbConn):
     dbCusorForStationAndNumber = dbConn.cursor()
-
+     # This sql command  query sum of rider base on Station
     SqlForStationAndNumber = """Select Station_Name, 
    sum(Num_Riders) as NumberOfRider from Ridership 
    inner join Stations  on Stations.Station_ID = Ridership.Station_ID 
@@ -144,7 +167,7 @@ def commandTwoFunction(dbConn):
     dbCusorForStationAndNumber.execute(SqlForStationAndNumber)
     # Execution of the  Sql
     fetchdbCusorForStationAndNumber = dbCusorForStationAndNumber.fetchall()
-    totalsumOfRider = calculateTotalRider(dbConn)
+    totalsumOfRider = calculate_total_rider(dbConn)
     # this function  returns the sum of all  the riders
 
     #printing to the console
@@ -157,8 +180,14 @@ def commandTwoFunction(dbConn):
         #  Station_Name, Total rider, and   percentage of the rider out of total
 
 
-def commandThereeFunction(dbConn):
+######
+#
+# this function shows the top-10 busiest stations in terms of ridership, in descending order
+#
+#######
+def top_ten_busiest_stations(dbConn):
     dbCursorMostBusiestStation = dbConn.cursor()
+    # this query retrive the top 10 most businest  station and number of rider 
     sqlForMostBusiestStation = """Select Station_Name,  sum(Num_Riders) as NumberOfRider from Ridership 
          inner join Stations  on Stations.Station_ID = Ridership.Station_ID
          group by Station_Name
@@ -167,17 +196,24 @@ def commandThereeFunction(dbConn):
 
     dbCursorMostBusiestStation.execute(sqlForMostBusiestStation)
     fetchMostBusiestStation = dbCursorMostBusiestStation.fetchall()
-    totalsumOfRider = calculateTotalRider(dbConn)
+    totalsumOfRider = calculate_total_rider(dbConn) # getting the total rider 
 
     print(" ** top-10 stations **")
 
     for row in fetchMostBusiestStation:
-        percantageofBusy = (row[1] / totalsumOfRider) * 100
-        print(row[0], ":", f"{row[1]:,}", f"({ percantageofBusy:.2f}%)")
+        percantageofBusy = (row[1] / totalsumOfRider) * 100 # calculating the percentage
+        print(row[0], ":", f"{row[1]:,}", f"({ percantageofBusy:.2f}%)") # f here is for formatting 
 
 
-def CommandFourFunction(dbConn):
+######
+#
+# this function shows least-10 busiest stations in terms of ridership, in ascending order by
+#
+#######
+
+def least_busy_stations(dbConn):
     dbCursorLeastBusyStation = dbConn.cursor()
+   # this query retrive the least  stations in terms of number of rider
     sqlForLeastBusiestStation = """Select Station_Name,  sum(Num_Riders) as NumberOfRider from Ridership 
           inner join Stations  on Stations.Station_ID = Ridership.Station_ID
           group by Station_Name
@@ -185,17 +221,26 @@ def CommandFourFunction(dbConn):
           limit 10;"""
     dbCursorLeastBusyStation.execute(sqlForLeastBusiestStation)
     fetchLeastBusiestStation = dbCursorLeastBusyStation.fetchall()
-    totalsumOfRider = calculateTotalRider(dbConn)
+    totalsumOfRider = calculate_total_rider(dbConn) # getting total number of rider 
 
     print(" ** least-10 stations **")
-
+    #  printing in a formateed way 
     for row in fetchLeastBusiestStation:
-        percantageofBusy = (row[1] / totalsumOfRider) * 100
+        percantageofBusy = (row[1] / totalsumOfRider) * 100 # calculating percentage
         print(row[0], ":", f"{row[1]:,}", f"({ percantageofBusy:.2f}%)")
 
 
-def commandFiveFunction(dbConn, value):
+###########
+#  a line color from the user and output all stop names that are part of that line, in ascending order. If
+# the line does not exist,
+# This function take   line color from user output all stops that part of that line in ascending order
+#  It also output stop’s direction and whether handicap-accessible
+#
+###########
+def information_about_stations(dbConn, value):
     dbCursorColorBelongStationName = dbConn.cursor()
+    # ADA -> 1 : handicap-accessible
+    # ADA -> 0 : handicap-not-accessible
     SqlForColorBelongStationName = """Select Stop_Name, Direction, ADA from Stops
       inner join StopDetails   on StopDetails.Stop_ID  = Stops.Stop_ID
       inner join Lines On Lines.Line_ID = StopDetails.Line_ID
@@ -203,52 +248,56 @@ def commandFiveFunction(dbConn, value):
       order by Stop_Name ASC;"""
 
     dbCursorColorBelongStationName.execute(SqlForColorBelongStationName,
-                                           [value])
+                                           [value]) # value is user input (line color)
     fetchColorBelongStationName = dbCursorColorBelongStationName.fetchall()
-
     if (len(fetchColorBelongStationName) == 0):
         print("**No such line...")
-
     for row in fetchColorBelongStationName:
         if (row[2] == 1):
-            AccessibleValue = "yes"
+            AccessibleValue = "yes" #printing out whether handicap accessible  
 
         else:
             AccessibleValue = "no"
         print(row[0], ":", "direction = ", row[1], "(accessible?",
               AccessibleValue + ")")
+      
+#######
+#
+# This function Outputs total ridership by month, in ascending order 
+# After the output, the user is given the option to plot the data
+#  if the user input "y" then the  plot  shows 
+# 
+#######
 
-
-def commandSixFunction(dbConn):
+def ridership_base_on_month(dbConn):
     dbcusorRiderBasedOnMonth = dbConn.cursor()
+     #strftime is a sql built in function to grab desirable date format (in this case its month)
     SqlForRiderBasedOnMonth = """Select  strftime('%m', Ride_Date) as Month, sum(Num_Riders)  
      from  Ridership 
      group By Month;"""
     dbcusorRiderBasedOnMonth.execute(SqlForRiderBasedOnMonth)
     fetchRiderBasedOnMonth = dbcusorRiderBasedOnMonth.fetchall()
-
     print(" ** ridership by month **")
-
     for row in fetchRiderBasedOnMonth:
-        print(row[0], ":", f"{row[1]:,}")
+        print(row[0], ":", f"{row[1]:,}") #printing  with formatted 
 
-    plotInput = input("Plot? (y/n)")
+    plotInput = input("Plot? (y/n)")  # taking input if user wants to see the input
     print();
-
-    if (plotInput == 'y'):
+    if (plotInput == 'y'): # if "y" we  will process  the ploting
         plt.clf()
-        x = []
+        x = [] # variable to fetch x and y coordinate variable 
         y = []
         for row in fetchRiderBasedOnMonth:
-            x.append(row[0])
-            y.append([row[1]])
-
-        plt.xlabel("month")
+            x.append(row[0])   # fetching the data
+            y.append([row[1]])  # fetching the data 
+       # setting up the plot  
+        plt.xlabel("month") 
         plt.ylabel("number of riders (x*10^8")
         plt.title("monthly ridership")
-        plt.ion()
+        plt.ion() # for interactive mode of plot (so that it does not hang on terminal  after plot)
         plt.plot(x, y)
         plt.show()
+
 
 
 def commandSevenFunction(dbConn):
@@ -462,16 +511,16 @@ while (True):
                 print()
                 commandOneInput = input(
                     "Enter partial station name (wildcards _ and %):")
-                commandOneFunction(dbConn, commandOneInput)
+                station_name_from_user(dbConn, commandOneInput)
 
             if (int(GenericInputVal) == 2):
-                commandTwoFunction(dbConn)
+                ridership_at_each_station(dbConn)
 
             if (int(GenericInputVal) == 3):
-                commandThereeFunction(dbConn)
+                top_ten_busiest_stations(dbConn)
 
             if (int(GenericInputVal) == 4):
-                CommandFourFunction(dbConn)
+                least_busy_stations(dbConn)
 
             if (int(GenericInputVal) == 5):
                 print()
@@ -479,16 +528,15 @@ while (True):
                     "Enter a line color (e.g. Red or Yellow): ")
                 if (commandFiveInput.lower() == "purple-express"):
                     commandFiveInput = "Purple-Express"
-                    commandFiveFunction(dbConn, commandFiveInput)
+                    information_about_stations(dbConn, commandFiveInput)
                 else:
                     inputFormatFive = commandFiveInput[1:].lower()
                     inputFormatFive2 = commandFiveInput[0].upper()
                     completeFormatSearchFive = inputFormatFive2 + inputFormatFive
-
-                    commandFiveFunction(dbConn, completeFormatSearchFive)
+                    information_about_stations(dbConn, completeFormatSearchFive)
 
             if (int(GenericInputVal) == 6):
-                commandSixFunction(dbConn)
+                ridership_base_on_month(dbConn)
 
             if (int(GenericInputVal) == 7):
                 commandSevenFunction(dbConn)
