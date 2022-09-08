@@ -82,7 +82,7 @@ def print_stats(dbConn):
                                    fetchTotalRidership[0]) * 100
     formatSunOrHolidayRiderPercantage = "{:.2f}".format(
         sunOrHolidayRiderPercentage)
-    print("  Weekly ridership:", f"{fetchWeekdayRider[0]:,}",
+    print("  Weekday ridership:", f"{fetchWeekdayRider[0]:,}",
           "(" + formatWeekdayRiderPercentage + "%)")
     print("  Saturday ridership:", f"{ fetchSaturdayRider[0]:,}",
           "(" + formatSaturdayRiderPercantage + "%)")
@@ -95,19 +95,33 @@ def print_stats(dbConn):
 # from the Station Table
 #  Its accept the wildcard user input from the  user and retrive the information
 
+
 def commandOneFunction(dbConn, value):
+
+    count = 0
     dbCursor = dbConn.cursor()
-    sqlUserStations = """Select Station_ID, Station_Name from Stations Where  Station_Name like ? """
+
+    sqlUserStations = """Select Station_ID, Station_Name from Stations Where  
+     Station_Name like ? 
+    order by Station_Name ASC"""
     # the question mark here will be replace by the value during SQL search query when its executed
 
     dbCursor.execute(sqlUserStations, [value])
     fetchStation = dbCursor.fetchall()
 
     if (len(fetchStation) == 0):
-        print("**No stations found...")
+        print(" **No stations found...")
 
-    for row in fetchStation:
-        print(row[0], ":", row[1])
+    if (len(fetchStation) == 1):
+        print("", fetchStation[0][0], ":", fetchStation[0][1])
+
+    else:
+        for row in fetchStation:
+            if (count == 0):
+                print("", row[0], ":", row[1])
+                count = count + 1
+            else:
+                print(row[0], ":", row[1])
 
 
 def calculateTotalRider(dbConn):
@@ -134,12 +148,14 @@ def commandTwoFunction(dbConn):
     # this function  returns the sum of all  the riders
 
     #printing to the console
+    print(" ** ridership all stations **")
     for row in fetchdbCusorForStationAndNumber:
         percantageofRider = (row[1] / totalsumOfRider) * 100
         # multiplication of 100 here just to make it percentage
         print(row[0], ":", f"{row[1]:,}", f"({percantageofRider:.2f}%)")
         # this is just the formatted output  as following
         #  Station_Name, Total rider, and   percentage of the rider out of total
+
 
 def commandThereeFunction(dbConn):
     dbCursorMostBusiestStation = dbConn.cursor()
@@ -152,6 +168,8 @@ def commandThereeFunction(dbConn):
     dbCursorMostBusiestStation.execute(sqlForMostBusiestStation)
     fetchMostBusiestStation = dbCursorMostBusiestStation.fetchall()
     totalsumOfRider = calculateTotalRider(dbConn)
+
+    print(" ** top-10 stations **")
 
     for row in fetchMostBusiestStation:
         percantageofBusy = (row[1] / totalsumOfRider) * 100
@@ -169,6 +187,8 @@ def CommandFourFunction(dbConn):
     fetchLeastBusiestStation = dbCursorLeastBusyStation.fetchall()
     totalsumOfRider = calculateTotalRider(dbConn)
 
+    print(" ** least-10 stations **")
+
     for row in fetchLeastBusiestStation:
         percantageofBusy = (row[1] / totalsumOfRider) * 100
         print(row[0], ":", f"{row[1]:,}", f"({ percantageofBusy:.2f}%)")
@@ -179,7 +199,7 @@ def commandFiveFunction(dbConn, value):
     SqlForColorBelongStationName = """Select Stop_Name, Direction, ADA from Stops
       inner join StopDetails   on StopDetails.Stop_ID  = Stops.Stop_ID
       inner join Lines On Lines.Line_ID = StopDetails.Line_ID
-      where color = ? 
+      where color = ?
       order by Stop_Name ASC;"""
 
     dbCursorColorBelongStationName.execute(SqlForColorBelongStationName,
@@ -191,10 +211,10 @@ def commandFiveFunction(dbConn, value):
 
     for row in fetchColorBelongStationName:
         if (row[2] == 1):
-            AccessibleValue = "Yes"
+            AccessibleValue = "yes"
 
         else:
-            AccessibleValue = "No"
+            AccessibleValue = "no"
         print(row[0], ":", "direction = ", row[1], "(accessible?",
               AccessibleValue + ")")
 
@@ -207,85 +227,92 @@ def commandSixFunction(dbConn):
     dbcusorRiderBasedOnMonth.execute(SqlForRiderBasedOnMonth)
     fetchRiderBasedOnMonth = dbcusorRiderBasedOnMonth.fetchall()
 
-    print("** ridership by month **")
+    print(" ** ridership by month **")
 
     for row in fetchRiderBasedOnMonth:
         print(row[0], ":", f"{row[1]:,}")
 
-    plotInput = input("plot: (y/n)")
+    plotInput = input("Plot? (y/n)")
+    print();
 
     if (plotInput == 'y'):
-        x= []
+        plt.clf()
+        x = []
         y = []
         for row in fetchRiderBasedOnMonth:
-          x.append(row[0]);
-          y.append([row[1]])
-          
+            x.append(row[0])
+            y.append([row[1]])
+
         plt.xlabel("month")
         plt.ylabel("number of riders (x*10^8")
         plt.title("monthly ridership")
         plt.ion()
-        plt.plot(x,y)
+        plt.plot(x, y)
         plt.show()
 
+
 def commandSevenFunction(dbConn):
-   dbcusorRiderBasedOnYear = dbConn.cursor()
-   sqlRiderBasedOnYear =  """Select  strftime('%Y', Ride_Date) as Year, sum(Num_Riders)
+    dbcusorRiderBasedOnYear = dbConn.cursor()
+    sqlRiderBasedOnYear = """Select  strftime('%Y', Ride_Date) as Year, sum(Num_Riders)
                 from  Ridership 
                 group By Year
                 order by Year asc;"""
 
-   dbcusorRiderBasedOnYear.execute(sqlRiderBasedOnYear);
-   fetchRiderBasedonYear = dbcusorRiderBasedOnYear.fetchall();
+    dbcusorRiderBasedOnYear.execute(sqlRiderBasedOnYear)
+    fetchRiderBasedonYear = dbcusorRiderBasedOnYear.fetchall()
 
-   print("** ridership by year **")
-   for row in fetchRiderBasedonYear:
-      print(row[0], ":", f"{row[1]:,}")
+    print(" ** ridership by year **")
+    for row in fetchRiderBasedonYear:
+        print(row[0], ":", f"{row[1]:,}")
 
-   plotInput = input("plot: (y/n)")
-   if (plotInput == 'y'):
-        x= []
+    plotInput = input("Plot? (y/n)")
+    print();
+    if (plotInput == 'y'):
+        plt.clf()
+        x = []
         y = []
         for row in fetchRiderBasedonYear:
-          val = row[0][2:4]
-          x.append(val);
-          y.append([row[1]])
-          
+            val = row[0][2:4]
+            x.append(val)
+            y.append([row[1]])
+
         plt.xlabel("year")
         plt.ylabel("number of riders (x*10^8")
         plt.title("yearly ridership")
         plt.ion()
-        plt.plot(x,y)
+        plt.plot(x, y)
         plt.show()
-  
-def  CheckforNumberOfStation(dbConn, Val):
-     dbcusorRiderBasedOnMonth = dbConn.cursor(); 
-     sqlforStationValue = """Select Station_Name from Stations
+
+
+def CheckforNumberOfStation(dbConn, Val):
+    dbcusorRiderBasedOnMonth = dbConn.cursor()
+    sqlforStationValue = """Select Station_Name from Stations
      Where Station_Name like ? """
-     dbcusorRiderBasedOnMonth.execute(sqlforStationValue, [Val]);
-     fetchStationValue = dbcusorRiderBasedOnMonth.fetchall();
+    dbcusorRiderBasedOnMonth.execute(sqlforStationValue, [Val])
+    fetchStationValue = dbcusorRiderBasedOnMonth.fetchall()
 
-     if(len(fetchStationValue) == 0 ):
-       print("**No station found...");
-       return False;
+    if (len(fetchStationValue) == 0):
+        print(" **No station found...")
+        return False
 
-     if(len(fetchStationValue) > 1):
-       print("**Multiple stations found...");
-       return False;
+    if (len(fetchStationValue) > 1):
+        print(" **Multiple stations found...")
+        return False
 
-     if(len(fetchStationValue) == 1):
-       return True;
-       
-     return;
+    if (len(fetchStationValue) == 1):
+        return True
 
-def  CommandEightFunction(dbConn, year, firstStationName, secondStationName):
-  dbcusorStation = dbConn.cursor(); 
-  dbcusorStationNameByDate = dbConn.cursor(); 
-  
-  sqlforGenerictStation = """Select Station_ID, Station_Name From Stations 
+    return
+
+
+def CommandEightFunction(dbConn, year, firstStationName, secondStationName):
+    dbcusorStation = dbConn.cursor()
+    dbcusorStationNameByDate = dbConn.cursor()
+
+    sqlforGenerictStation = """Select Station_ID, Station_Name From Stations 
   Where Station_Name  like  ? """
-  
-  sqlforMainQueryStationOne = """SELECT 
+
+    sqlforMainQueryStationOne = """SELECT 
   Date(R.Ride_Date), 
    R.Num_Riders
 FROM 
@@ -303,71 +330,74 @@ FROM
 WHERE R.rn_up <= 5 OR R.rn_down <= 5
 ORDER BY R.Ride_Date ASC;"""
 
-  SqlforGraph = """Select Date(Ride_Date) , sum(Num_Riders) from Ridership  inner join  Stations  on Stations.Station_ID = Ridership.Station_ID Where strftime('%Y', Ride_Date) = ? AND Station_Name like ? Group By  Ride_Date""";
+    SqlforGraph = """Select Date(Ride_Date) , sum(Num_Riders) from Ridership  inner join  Stations  on Stations.Station_ID = Ridership.Station_ID Where strftime('%Y', Ride_Date) = ? AND Station_Name like ? Group By  Ride_Date"""
 
-  dbcusorStation.execute(sqlforGenerictStation, [firstStationName])
-  fetchStation =  dbcusorStation.fetchall();
+    dbcusorStation.execute(sqlforGenerictStation, [firstStationName])
+    fetchStation = dbcusorStation.fetchall()
 
-  dbcusorStationNameByDate.execute(sqlforMainQueryStationOne, [year, firstStationName])
-  fetchFirstStation = dbcusorStationNameByDate.fetchall();
+    dbcusorStationNameByDate.execute(sqlforMainQueryStationOne,
+                                     [year, firstStationName])
+    fetchFirstStation = dbcusorStationNameByDate.fetchall()
 
-  dbcusorStation.execute(sqlforGenerictStation, [secondStationName])
-  fetchStation2 = dbcusorStation.fetchall();
+    dbcusorStation.execute(sqlforGenerictStation, [secondStationName])
+    fetchStation2 = dbcusorStation.fetchall()
 
-  dbcusorStationNameByDate.execute(sqlforMainQueryStationOne, [year,secondStationName])
-  fetchFirstStation2 = dbcusorStationNameByDate.fetchall();
+    dbcusorStationNameByDate.execute(sqlforMainQueryStationOne,
+                                     [year, secondStationName])
+    fetchFirstStation2 = dbcusorStationNameByDate.fetchall()
+
+    dbcusorStationNameByDate.execute(SqlforGraph, [year, firstStationName])
+    fetchForPlot1 = dbcusorStationNameByDate.fetchall()
+    dbcusorStationNameByDate.execute(SqlforGraph, [year, secondStationName])
+    fetchForPlot2 = dbcusorStationNameByDate.fetchall()
+
+    for row in fetchStation:
+        print(" Station 1: ", row[0], row[1])
+        legendForFirstStation = row[1]
+
+    for row in fetchFirstStation:
+        print(row[0], row[1])
+
+    for row in fetchStation2:
+        print("Station 2: ", row[0], row[1])
+        legendForSecondStation = row[1]
+
+    for row in fetchFirstStation2:
+        print(row[0], row[1])
+
+    plotInput = input("Plot? (y/n)")
+    print();
+    if (plotInput == 'y'):
+        x1 = []
+        y1 = []
+        y2 = []
+        day = 1
+        plt.clf()
+        # this function clear any previous plot
+
+        for row in fetchForPlot1:
+            x1.append(day)
+            y1.append(row[1])
+            day = day + 1
+
+        for row in fetchForPlot2:
+            y2.append(row[1])
+
+        plt.xlabel("day")
+        plt.ylabel("number of riders")
+        plt.title("riders each day of " + year)
+
+        plt.ion(
+        )  # this function works in  a way that the  terminal does not hang after plot
+        plt.plot(x1, y1, label=legendForFirstStation)
+        plt.plot(x1, y2, label=legendForSecondStation)
+        plt.legend(loc="upper right")
+        plt.show()
 
 
-  dbcusorStationNameByDate.execute(SqlforGraph , [year, firstStationName])
-  fetchForPlot1 = dbcusorStationNameByDate.fetchall(); 
-  dbcusorStationNameByDate.execute(SqlforGraph , [year, secondStationName])
-  fetchForPlot2 = dbcusorStationNameByDate.fetchall(); 
-
-  for row in fetchStation:
-     print("Station 1: ", row[0], row[1])
-     legendForFirstStation = row[1];
-    
-  for row in fetchFirstStation: 
-    print( row[0],  row[1])
-     
-
-  for row in fetchStation2:
-    print("Station 2: ", row[0], row[1])
-    legendForSecondStation = row[1];
-
-  for row in fetchFirstStation2: 
-    print( row[0],  row[1])
-
-  plotInput = input("plot: (y/n)")
-  if (plotInput == 'y'):
-    x1= []
-    y1 = []
-    y2 = []
-    day  = 1;
-    plt.clf(); # this function clear any previous plot 
-  
-    for row in fetchForPlot1:
-      x1.append(day)
-      y1.append(row[1])
-      day = day + 1;
-
-    for row in fetchForPlot2:
-      y2.append(row[1])
-
-    plt.xlabel("day")
-    plt.ylabel("number of riders")
-    plt.title("riders each day of " + year)
-    
-    plt.ion() # this function works in  a way that the  terminal does not hang after plot
-    plt.plot(x1,y1,  label= legendForFirstStation)
-    plt.plot(x1,y2, label= legendForSecondStation)
-    plt.legend(loc="upper right")
-    plt.show()
-
-    
 def commandNineFunction(dbConn, StationName):
-   dbcusorStation = dbConn.cursor(); 
-   SqlforStationName = """Select  distinct(Station_Name), Latitude, 
+    dbcusorStation = dbConn.cursor()
+    SqlforStationName = """Select  distinct(Station_Name), Latitude, 
        Longitude from Stations
        Inner Join Stops on Stations.Station_ID =  Stops.Station_ID
        Inner join  StopDetails on  StopDetails.Stop_ID = Stops.Stop_ID
@@ -375,38 +405,39 @@ def commandNineFunction(dbConn, StationName):
        Where  Color = ?
        order by Station_Name ASC"""
 
-   dbcusorStation.execute(SqlforStationName, [StationName]); 
-   fetchStation = dbcusorStation.fetchall();
+    dbcusorStation.execute(SqlforStationName, [StationName])
+    fetchStation = dbcusorStation.fetchall()
 
-   if(len(fetchStation) == 0):
-     print("**No such line...")
-     return;
+    if (len(fetchStation) == 0):
+        print("**No such line...")
+        return
 
-   for row in fetchStation:
-     print(row[0], ": ",  "(" + str(row[1])+","  , str(row[2]) + ")" )
+    for row in fetchStation:
+        print(row[0], ": ", "(" + str(row[1]) + ",", str(row[2]) + ")")
+
+    plotInput = input("plot? (y/n)")
+    print();
+    if (plotInput == 'y'):
+        x = []
+        y = []
+        for row in fetchStation:
+            y.append(row[1])
+            x.append(row[2])
+        image = plt.imread("chicago.png")
+        xydims = [-87.9277, -87.5569, 41.7012, 42.0868]
+        plt.imshow(image, extent=xydims)
+        plt.title(StationName + " line")  # StationName here is Color
+        # neeed To change the variable name  StationName = color
+        plt.ion()
+        plt.plot(x, y, "o", c=StationName)
+
+        for row in fetchStation:
+            plt.annotate(row[0], (row[2], row[1]))
+        plt.xlim([-87.9277, -87.5569])
+        plt.ylim([41.7012, 42.0868])
+        plt.show()
 
 
-   plotInput = input("plot: (y/n)")
-   if (plotInput == 'y'):
-     x = []
-     y = []
-     for row in fetchStation:
-      y.append(row[1])
-      x.append(row[2])
-     image = plt.imread("chicago.png"); 
-     xydims = [-87.9277, -87.5569, 41.7012, 42.0868]
-     plt.imshow(image, extent=xydims)
-     plt.title( StationName +  " line")  # StationName here is Color
-     # neeed To change the variable name  StationName = color
-     plt.ion()
-     plt.plot(x, y, "o", c=StationName)
-
-     for row in fetchStation:
-       plt.annotate(row[0], (row[2], row[1]))
-     plt.xlim([-87.9277, -87.5569])
-     plt.ylim([41.7012, 42.0868])
-     plt.show()
-            
 ##################################################################
 #
 # main
@@ -426,54 +457,91 @@ while (True):
         break
 
     try:
-      if (int(GenericInputVal) > 0 and int(GenericInputVal) < 10):
-        if (int(GenericInputVal) == 1):
-            commandOneInput = input(
-                "Enter partial station name (wildcards _ and %):")
-            commandOneFunction(dbConn, commandOneInput)
+        if (int(GenericInputVal) > 0 and int(GenericInputVal) < 10):
+            if (int(GenericInputVal) == 1):
+                print()
+                commandOneInput = input(
+                    "Enter partial station name (wildcards _ and %):")
+                commandOneFunction(dbConn, commandOneInput)
 
-        if (int(GenericInputVal) == 2):
-            commandTwoFunction(dbConn)
+            if (int(GenericInputVal) == 2):
+                commandTwoFunction(dbConn)
 
-        if (int(GenericInputVal) == 3):
-            commandThereeFunction(dbConn)
+            if (int(GenericInputVal) == 3):
+                commandThereeFunction(dbConn)
 
-        if (int(GenericInputVal) == 4):
-            CommandFourFunction(dbConn)
+            if (int(GenericInputVal) == 4):
+                CommandFourFunction(dbConn)
 
-        if (int(GenericInputVal) == 5):
-            commandFiveInput = input( "Enter a line color (e.g. Red or Yellow): ")
+            if (int(GenericInputVal) == 5):
+                print()
+                commandFiveInput = input(
+                    "Enter a line color (e.g. Red or Yellow): ")
+                if (commandFiveInput.lower() == "purple-express"):
+                    commandFiveInput = "Purple-Express"
+                    commandFiveFunction(dbConn, commandFiveInput)
+                else:
+                    inputFormatFive = commandFiveInput[1:].lower()
+                    inputFormatFive2 = commandFiveInput[0].upper()
+                    completeFormatSearchFive = inputFormatFive2 + inputFormatFive
 
-            inputFormatFive = commandFiveInput[1:].lower();
-            inputFormatFive2 = commandFiveInput[0].upper();
-            completeFormatSearchFive = inputFormatFive2 + inputFormatFive; 
-      
-            commandFiveFunction(dbConn, completeFormatSearchFive)
+                    commandFiveFunction(dbConn, completeFormatSearchFive)
 
-        if (int(GenericInputVal) == 6):
-            commandSixFunction(dbConn)
+            if (int(GenericInputVal) == 6):
+                commandSixFunction(dbConn)
 
-        if (int (GenericInputVal) == 7):
-           commandSevenFunction(dbConn);
+            if (int(GenericInputVal) == 7):
+                commandSevenFunction(dbConn)
 
-        if(int(GenericInputVal) == 8):
-          commandInputYear  = (input( "Year to compare against?"));
-          commandStationNameInput = input("Enter station 1 (wildcards _ and %):");
-          if(CheckforNumberOfStation(dbConn, commandStationNameInput) == True):
-            commandStationNameInput2 = input("Enter station 2 (wildcards _ and %):");
-            if(CheckforNumberOfStation(dbConn, commandStationNameInput2) == True):
-              CommandEightFunction(dbConn, commandInputYear , commandStationNameInput,commandStationNameInput2)
+            if (int(GenericInputVal) == 8):
+                print();
+                commandInputYear = (input("Year to compare against?"))
+                print();
+                commandStationNameInput = input(
+                    "Enter station 1 (wildcards _ and %):")
+                
+                if (CheckforNumberOfStation(dbConn,
+                                            commandStationNameInput) == True): 
+                    print();
+                    commandStationNameInput2 = input(
+                        "Enter station 2 (wildcards _ and %):")                      
+                                              
+                    if (CheckforNumberOfStation(
+                            dbConn, commandStationNameInput2) == True):
+                        CommandEightFunction(dbConn, commandInputYear,
+                                             commandStationNameInput,
+                                             commandStationNameInput2)
 
-        if(int(GenericInputVal) == 9):
-          commandInputStation  = (input( "Enter a line color (e.g. Red or Yellow): "));
+            if (int(GenericInputVal) == 9):
+                print();
+                commandInputStation = (
+                    input("Enter a line color (e.g. Red or Yellow): "))
+                
+              
+              
 
-          inputFormat = commandInputStation[1:].lower();
-          inputFormat2 = commandInputStation[0].upper();
-          completeFormatSearch = inputFormat2 + inputFormat
-          commandNineFunction(dbConn,completeFormatSearch);  
-    
+                # inputFormat = commandInputStation[1:].lower()
+                # inputFormat2 = commandInputStation[0].upper()
+                # completeFormatSearch = inputFormat2 + inputFormat
+                # 
+                if (commandInputStation.lower() == "purple-express"):
+                 commandInputStation = "Purple-Express"
+                 commandNineFunction(dbConn, commandInputStation)
+                else:
+                  inputFormat = commandInputStation[1:].lower()
+                  inputFormat2 = commandInputStation[0].upper()
+                  completeFormatSearch = inputFormat2 + inputFormat
+                  commandNineFunction(dbConn,completeFormatSearch);
+                    
+
+              
+
+                
+        else:
+            print(" **Error, unknown command, try again...")
+
     except:
-         print("**Error, unknown command, try again...")
+        print(" **Error, unknown command, try again...")
 
 #
 # done
